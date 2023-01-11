@@ -45,6 +45,96 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
+
+
+@app.route('/user/favorites', methods=['GET'])
+def get_users_favorites():
+
+    all_favorites = Favorites.query.all()
+    return jsonify(
+        [ favorites.serialize() for favorites in all_favorites]
+    ), 200
+
+
+@app.route('/people', methods=['GET'])
+def people_todos():
+    #consultas los personajes
+    #devolver personas serializadas
+    all_people = Peoples.query.all()
+    return jsonify(
+        [ people.serialize() for people in all_people]
+    ), 200
+
+@app.route('/favorites/people/<int:people_id>', methods=['GET','POST','DELETE'])
+def post_people(people_id):
+    body = request.json
+    search = Peoples.query.get(people_id)
+
+    if request.method == 'GET':
+        if search != None:
+            return jsonify(search.serialize()), 200
+        else:
+            return 'not found people', 404
+    elif request.method == 'POST':
+        if "name" not in body:
+            return 'Description', 400
+        if "user_id" not in body:
+            return 'user', 400
+        if "people_id" not in body:
+            return 'people', 400
+        new_row = Favorites.new_registro_favorites(body["name"], body["user_id"], None, body["people_id"])
+        if new_row == None:
+            return 'Error!', 500
+        else:
+            return jsonify(new_row.serialize()), 200
+    else:
+        searchdelete = Favorites.query.get(people_id)
+
+        result = searchdelete.delete()
+        if result == True:
+            return f'people {people_id} deleted!', 200
+        else:
+            return 'Error!', 500
+
+@app.route('/planets', methods=['GET'])
+def get_planets():
+    #consultas todos los planetas
+    all_planets = Planets.query.all()
+    return jsonify(
+        [ planets.serialize() for planets in all_planets]
+    ), 200
+
+@app.route('/favorites/planets/<int:planet_id>', methods=['GET','POST','DELETE'])
+def post_planets(planet_id):
+    body = request.json
+    search = Planets.query.get(planet_id)
+
+    if request.method == 'GET':
+        if search != None:
+            return jsonify(search.serialize()), 200
+        else:
+            return 'Not found', 404
+    elif request.method == 'POST':
+        if "name" not in body:
+            return 'Favorite!', 400
+        if "user_id" not in body:
+            return 'user', 400
+        if "planet_id" not in body:
+            return 'planet', 400
+        new_row = Favorites.new_registro_favorites(body["name"], body["user_id"], body["planet_id"], None)
+        if new_row == None:
+            return 'Error!', 500
+        else:
+            return jsonify(new_row.serialize()), 200
+    else:
+        searchdelete = Favorites.query.get(planet_id)
+
+        result = searchdelete.delete()
+        if result == True:
+            return f'planeta {planet_id} deleted', 200
+        else:
+            return 'Error!', 500
+
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
